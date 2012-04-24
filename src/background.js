@@ -50,7 +50,10 @@ chrome.webRequest.onCompleted.addListener(
 						return;
 					if (xhr.status == 200) {
 						spofCheck(info.tabId, info.url, xhr.responseText);
+						xhr.responseText = null;
 					}
+					xhr.onreadystatechange = null;
+					xhr.abort();
 				};
 				xhr.send();
 			} catch (err) {}
@@ -110,9 +113,12 @@ function UpdateBlockList() {
 				return;
 			if (xhr.status == 200) {
 				blockList = JSON.parse(xhr.responseText);
+				xhr.responseText = null;
 				console.log('Server block list:');
 				console.log(blockList);
 			}
+			xhr.onreadystatechange = null;
+			xhr.abort();
 	  };
 	  xhr.onerror = function() {
 		console.log('Got an XHR error!');
