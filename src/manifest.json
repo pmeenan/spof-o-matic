@@ -15,6 +15,7 @@
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
+		"browsingData",
     "http://*/*",
     "https://*/*"
   ],

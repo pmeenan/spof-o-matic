@@ -1,5 +1,55 @@
 #content { min-width: 400px; }
-ul.hosts li{font-weight:bold;}
-ul.scripts li{font-weight: normal;}
+ul {list-style: none;padding:0;margin:0;}
+ul.scripts {margin-left: 2em;}
+ul.hosts span.host{font-weight:bold;}
+ul.scripts li{font-weight: normal;white-space: nowrap;}
 h1 {font-size: 16px;}
 li {font-size: 14px;}
+li.pos0 {color:#800000;}
+li.pos1 {color:#800000;}
+li.pos2 {color:#800000;}
+li.pos3 {color:#800000;}
+li.pos4 {color:#CC7A00;}
+li.pos5 {color:#CC7A00;}
+li.pos6 {color:#CC7A00;}
+li.pos7 {color:#999999;}
+li.pos8 {color:#999999;}
+li.pos9 {color:#999999;}
+li.pos10 {color:#999999;}
+button.reset {
+	float: right;
+}
+button {
+	display: inline-block;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	padding: 2px 5px;
+	-webkit-border-radius: .5em; 
+	border-radius: .5em;
+	font-size: 10px;
+}
+button:hover {
+	text-decoration: none;
+}
+button:active {
+	position: relative;
+	top: 1px;
+}
+button.remove {
+	color: #fef4e9;
+	border: solid 1px #001f00;
+	background: #006600;
+}
+button.remove:hover {
+	background: #338533;
+}
+button.disable {
+	color: #fef4e9;
+	border: solid 1px #330000;
+	background: #5A0000;
+}
+button.disable:hover {
+	background: #800000;
+}
