@@ -1,21 +1,20 @@
 {
   "name": "SPOF-O-Matic",
   "version": "0.1",
-  "description": "Detects likely third-party single points of failure as you browse and allows you to Simulate 3rd party resources being unavailable so you can see what the impact would be on sites.  To enable content blocking, click the greyed-out black hole icon in the toolbar.",
+  "description": "Detects likely third-party single points of failure as you browse and allows you to Simulate 3rd party resources being unavailable.",
   "background": {
     "scripts": ["background.js"]
 	},
   "browser_action": {
     "default_title": "SPOF-O-Matic",
     "default_icon": "inactive.png",
-		"default_popup": "popup.html"
+	"default_popup": "popup.html"
   },
   "permissions": [
     "tabs",
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
-		"browsingData",
     "http://*/*",
     "https://*/*"
   ],

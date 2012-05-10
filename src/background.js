@@ -202,9 +202,6 @@ function onRequest(request, sender, sendResponse) {
 		active = true;
 		ICON_DEFAULT = ICON_ACTIVE;
 		chrome.browserAction.setIcon({path: ICON_DEFAULT});
-		if (chrome['browsingData'] != undefined) {
-			chrome.browsingData.removeCache({}, function(){});
-		}
 		sendResponse({});
 	} else if (request.msg == 'disable') {
 		active = false;

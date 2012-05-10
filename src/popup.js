@@ -8,11 +8,11 @@ function spofUpdate() {
 	chrome.extension.sendRequest({msg: 'getSPOF', tab: tabId}, function(response) {
 		var html = '';
 		if (response['isActive']) {
-			html += '<h1>Resource blocking is currently Active <button class="disable">Disable</button>';
+			html += '<h1>Resource blocking is currently Active <button class="disable">Disable</button><button class="reset">Reset</button></h1>';
 		} else {
-			html += '<h1>Resource blocking is currently Disabled <button class="enable">Enable</button>';
+			html += '<h1>Resource blocking is currently Disabled <button class="enable">Enable</button><button class="reset">Reset</button></h1>';
+			html += '<span class="note">(For best results, exit Chrome and start a new instance before enabling resource blocking)</span>';
 		}
-		html += '<button class="reset">Reset</button></h1>'
 		if (response['spof'] != undefined) {
 			html += '<hr><h1>Possible Frontend SPOF from:</h1><ul class="hosts">';
 			for (var i = 0; i < response['spof'].scripts.length; i++) {
