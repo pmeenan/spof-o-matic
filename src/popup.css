@@ -1,5 +1,6 @@
 #content { min-width: 450px; }
 ul {list-style: none;padding:0;margin:0;}
+ul.hosts {margin-left: 0.5em;}
 ul.scripts {margin-left: 2em;}
 ul.hosts span.host{font-weight:bold;}
 ul.scripts li{font-weight: normal;white-space: nowrap;}
@@ -17,9 +18,9 @@ li.pos7 {color:#999999;}
 li.pos8 {color:#999999;}
 li.pos9 {color:#999999;}
 li.pos10 {color:#999999;}
-button.reset {
-	float: right;
-}
+button.reset {float: right;}
+button.edit {float: right;}
+button.return {float: right;}
 button {
 	display: inline-block;
 	outline: none;

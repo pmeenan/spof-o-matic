@@ -2,6 +2,7 @@ var active = false;
 var blockHosts = new Array();
 var whiteList = new Array();
 var detected_spof = {};
+var blocked = {};
 var badges = {};
 var tab_icons = {};
 
@@ -53,10 +54,13 @@ chrome.webRequest.onBeforeRequest.addListener(
 		var action = {};
 		if (info.type == 'main_frame') {
 			detected_spof[info.tabId] = {};
-			SetBadge(info.tabId, ICON_DEFAULT);
+			blocked[info.tabId] = {};
 			delete detected_spof[info.tabId];
+			delete blocked[info.tabId];
+			SetBadge(info.tabId, ICON_DEFAULT);
 		}
 		if (active && info.type == 'script' && BlockURL(info.url)) {
+      Blocked(info.url, info.tabId);
 			SetBadge(info.tabId, ICON_BLOCKED)
 			console.log("blocking: " + info.url);
 			action.redirectUrl = 'https://blackhole.webpagetest.org/';
@@ -129,6 +133,29 @@ function BlockURL(url) {
 	return block;
 }
 
+/*
+  The given URL was blocked, keep track of it
+*/
+function Blocked(url, tabId) {
+	var hostRegex = new RegExp('[^/]*//([^/]+)', 'im');
+	var host = url.match(hostRegex)[1].toString();
+  if (blocked[tabId] == undefined) {
+    blocked[tabId] = {};
+  }
+  if (blocked[tabId][host] == undefined) {
+    blocked[tabId][host] = new Array();
+  }
+  var exists = false;
+  for (i=0; i < blocked[tabId][host].length && !exists; i++) {
+    if (blocked[tabId][host][i] == url) {
+      exists = true;
+    }
+  }
+  if (!exists) {
+    blocked[tabId][host].push(url);
+  }
+}
+
 function IsOnBlockList(host) {
 	var found = false;
 	for (i = 0; i < blockList.length && !found; i++) {
@@ -197,7 +224,20 @@ function onRequest(request, sender, sendResponse) {
 				}
 			}
 		}
+		if (active && request['tab'] && blocked[request['tab']] != undefined) {
+			response['blocked'] = blocked[request['tab']];
+      for (host in response['blocked']) {
+        if (isOnWhiteList(host)) {
+          delete response['blocked'][host];
+        }
+      }
+    }
 		sendResponse(response);
+	} else if (request.msg == 'getLists') {
+		var response = {isActive: active};
+    response['whitelist'] = whiteList;
+    response['block'] = blockHosts;
+    sendResponse(response);
 	} else if (request.msg == 'enable') {
 		active = true;
 		ICON_DEFAULT = ICON_ACTIVE;
@@ -272,7 +312,7 @@ function setSPOF(tab_id, spofHosts, spofScripts) {
 			hostCount++;
 		}
 	}
-	if (hostCount > 0) {
+	if (hostCount > 0 && (!active || blocked[tab_id] == undefined)) {
 		SetBadge(tab_id, ICON_DETECTED);
 	}
 	detected_spof[tab_id] = {hosts: spofHosts, scripts: spofScripts};
