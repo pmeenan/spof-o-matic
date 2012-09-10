@@ -91,20 +91,26 @@ function spofUpdate() {
         html += '<h1>Resource blocking is currently Disabled <button class="enable">Enable</button><button class="reset">Reset</button><button class="edit">Edit</button></h1>';
         html += '<span class="note">(For best results, exit Chrome and start a new instance before enabling resource blocking)</span>';
       }
-      if (response['blocked'] != undefined) {
-        html += '<hr><h1>Blocked:</h1><ul class="hosts">';
-        for (host in response['blocked']) {
-          html += '<li><span class="host">' + host + '</span> - <button host="' + host + '" class="add">Whitelist</button>';
-          html += '<ul class="scripts">';
-          for (var i = 0; i < response['blocked'][host].length; i++) {
-            html += '<li class="blocked">' + response['blocked'][host][i].replace(/>/g, '&gt;').replace(/</g, '&lt;') + '</li>';
+      if (response['isActive']) {
+        html += '<hr><h1>Blocked:</h1>';
+        if (response['blocked'] != undefined) {
+          html += '<ul class="hosts">';
+          for (host in response['blocked']) {
+            html += '<li><span class="host">' + host + '</span> - <button host="' + host + '" class="add">Whitelist</button>';
+            html += '<ul class="scripts">';
+            for (var i = 0; i < response['blocked'][host].length; i++) {
+              html += '<li class="blocked">' + response['blocked'][host][i].replace(/>/g, '&gt;').replace(/</g, '&lt;') + '</li>';
+            }
+            html += '</ul></li>'
           }
-          html += '</ul></li>'
+          html += '</ul>';
+        } else {
+          html += 'No Requests were blocked';
         }
-        html += '</ul>';
       }
+      html += '<hr><h1>Possible Frontend SPOF from:</h1>';
       if (response['spof'] != undefined) {
-        html += '<hr><h1>Possible Frontend SPOF from:</h1><ul class="hosts">';
+        html += '<ul class="hosts">';
         for (var i = 0; i < response['spof'].scripts.length; i++) {
           var host = response['spof'].scripts[i].host;
           if (response['spof'].scripts[i].whitelist) {
@@ -114,14 +120,16 @@ function spofUpdate() {
           }
           html += '<ul class="scripts">';
           for (var j = 0; j < response['spof'].scripts[i].scripts.length; j++) {
-            var position = response['spof'].scripts[i].scripts[j].position.toFixed(0);
-            var group = Math.floor(position / 10);
+            var blockedContent = response['spof'].scripts[i].scripts[j].blockedContent.toFixed(0);
+            var group = Math.floor(blockedContent / 10);
             var script = response['spof'].scripts[i].scripts[j].script.replace(/>/g, '&gt;').replace(/</g, '&lt;');
-            html += '<li class="pos' + group + '"> (<b>' + position + '</b>%) - ' + script + '</li>';
+            html += '<li class="pos' + group + '"> (<b>' + blockedContent + '</b>%) - ' + script + '</li>';
           }
           html += '</ul></li>'
         }
         html += '</ul>';
+      } else {
+        html += 'No Third-Party blocking scripts detected.';
       }
       document.getElementById('content').innerHTML = html;
       AttachButtons();

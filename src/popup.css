@@ -7,17 +7,17 @@ ul.scripts li{font-weight: normal;white-space: nowrap;}
 h1 {font-size: 16px;}
 li {font-size: 14px;}
 span.note {font-size: 12px;}
-li.pos0 {color:#800000;}
-li.pos1 {color:#800000;}
-li.pos2 {color:#800000;}
-li.pos3 {color:#800000;}
-li.pos4 {color:#CC7A00;}
-li.pos5 {color:#CC7A00;}
+li.pos10 {color:#800000;}
+li.pos9 {color:#800000;}
+li.pos8 {color:#800000;}
+li.pos7 {color:#800000;}
 li.pos6 {color:#CC7A00;}
-li.pos7 {color:#999999;}
-li.pos8 {color:#999999;}
-li.pos9 {color:#999999;}
-li.pos10 {color:#999999;}
+li.pos5 {color:#CC7A00;}
+li.pos4 {color:#CC7A00;}
+li.pos3 {color:#999999;}
+li.pos2 {color:#999999;}
+li.pos1 {color:#999999;}
+li.pos0 {color:#999999;}
 button.reset {float: right;}
 button.edit {float: right;}
 button.return {float: right;}
