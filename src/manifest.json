@@ -1,6 +1,6 @@
 {
   "name": "SPOF-O-Matic",
-  "version": "0.5",
+  "version": "0.7",
   "description": "Detects likely third-party single points of failure as you browse and allows you to Simulate 3rd party resources being unavailable.",
   "background": {
     "scripts": ["background.js"]

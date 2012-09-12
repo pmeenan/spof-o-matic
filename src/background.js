@@ -44,7 +44,6 @@ var ICON_BLOCKED = "blocked.png";
 var ICON_DETECTED = "detected.png";
 var ICON_DEFAULT = ICON_INACTIVE;
 
-var tldRegex = /[-\w]+\.(?:[-\w]+\.xn--[-\w]+|[-\w]{3,}|[-\w]+\.[-\w]{2})$/i;
 var hostRegex = /[^\/]*\/\/([^\/]+)/;
 
 // Array Remove - By John Resig (MIT Licensed)
@@ -52,6 +51,23 @@ Array.prototype.remove = function(from, to) {
   var rest = this.slice((to || from) + 1 || this.length);
   this.length = from < 0 ? this.length + from : from;
   return this.push.apply(this, rest);
+};
+
+// Determining the top-level-domain for a given host is way too complex to do right
+// (you need a full list of them basically)
+// We are going to simplify it and assume anything that is .co.xx will have 3 parts
+// and everything else will have 2
+function GetTLD(host){
+	var tld = host;
+	var noSecondaries = /\.co\.\w\w$/i;
+	if (host.match(noSecondaries)) {
+		var threePart = /[\w]+\.[\w]+\.[\w]+$/i;
+		tld = host.match(threePart).toString();
+	} else {
+		var twoPart = /[\w]+\.[\w]+$/i;
+		tld = host.match(twoPart).toString();
+	}
+	return tld;
 };
 
 chrome.webRequest.onBeforeRequest.addListener(
@@ -65,9 +81,9 @@ chrome.webRequest.onBeforeRequest.addListener(
       SetBadge(info.tabId, ICON_DEFAULT);
       // update the TLD list for the current page
       page_tlds[info.tabId] = new Array();
-      page_tlds[info.tabId].push(info.url.match(hostRegex)[1].toString().match(tldRegex).toString());
+      page_tlds[info.tabId].push(GetTLD(info.url.match(hostRegex)[1].toString()));
     }
-    if (active && info.type == 'script' && BlockURL(info.url, info.tabId)) {
+    if (active && (info.type == 'script' || info.type == 'stylesheet') && BlockURL(info.url, info.tabId)) {
       Blocked(info.url, info.tabId);
       SetBadge(info.tabId, ICON_BLOCKED)
       console.log("blocking: " + info.url);
@@ -308,7 +324,7 @@ function isOnWhiteList(host, tabid) {
   }
   // see if it matches a tld on the current page
   if (tabid && !found && page_tlds[tabid] !== undefined) {
-    var tld = host.match(tldRegex).toString();
+    var tld = GetTLD(host);
     for (i = 0; i < page_tlds[tabid].length && !found; i++) {
       if (page_tlds[tabid][i] == tld) {
         found = true;
@@ -431,7 +447,7 @@ function spofCheck(tab_id, url, pageText) {
   var spofHosts = new Array();
   var spofScripts = new Array();
 
-  safeTLDs.push(url.match(hostRegex)[1].toString().match(tldRegex).toString());
+  safeTLDs.push(GetTLD(url.match(hostRegex)[1].toString()));
   var matches = pageText.match(cssRegex);
   if (matches) {
     for (var i = 0; i < matches.length; i++) {
@@ -439,7 +455,7 @@ function spofCheck(tab_id, url, pageText) {
         // do not count css files that have "font" in the name as being safe
         var url = matches[i].toString().match(htmlUrlRegex)[2].toString();
         if (!url.match(/font/i)) {
-          spofAddArrayElement(safeTLDs, matches[i].toString().match(htmlHostRegex)[2].toString().match(tldRegex).toString());
+          spofAddArrayElement(safeTLDs, GetTLD(matches[i].toString().match(htmlHostRegex)[2].toString()));
         }
       } catch(err) {}
     }
@@ -448,7 +464,7 @@ function spofCheck(tab_id, url, pageText) {
   if (matches) {
     for (var i = 0; i < matches.length; i++) {
       try {
-        spofAddArrayElement(safeTLDs, matches[i].toString().match(htmlHostRegex)[2].toString().match(tldRegex).toString());
+        spofAddArrayElement(safeTLDs, GetTLD(matches[i].toString().match(htmlHostRegex)[2].toString()));
       } catch(err) {}
     }
   }
@@ -459,7 +475,7 @@ function spofCheck(tab_id, url, pageText) {
       var script = match[0].toString();
       var blockedContent = 100 - (((match.index + script.length) / pageLen) * 100);
       var host = script.match(htmlHostRegex)[2].toString();
-      var tld = host.match(tldRegex).toString();
+      var tld = GetTLD(host);
       if (!script.match(cssRegex) || script.match(cssValidRegex)) {
         if (IsOnBlockList(host) || !spofMatch(safeTLDs, tld)) {
           spofAddArrayElement(thirdParty, host);
