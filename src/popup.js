@@ -58,7 +58,7 @@ function spofUpdate() {
         html += '<h1>Resource blocking is currently Disabled <button class="enable">Enable</button><button class="reset">Reset</button><button class="return">Return</button></h1>';
         html += '<span class="note">(For best results, exit Chrome and start a new instance before enabling resource blocking)</span>';
       }
-      html += '<hr><h1>Detected Third-Party Domains:</h1><ul class="domains">';
+      html += '<hr><h1>Detected Third-Party Domains:</h1>';
       if (response['block'] != undefined) {
         var hosts = response['block'];
         hosts.sort(function(a,b){
@@ -76,7 +76,7 @@ function spofUpdate() {
           }
         }
       } else {
-        html += 'No third-party domains detected.  Try browsing around for a while first to build a list.';
+        html += '<ul class="domains">No third-party domains detected.  Try browsing around for a while first to build a list.';
       }
       html += '</ul>';
       document.getElementById('content').innerHTML = html;
@@ -90,6 +90,19 @@ function spofUpdate() {
       } else {
         html += '<h1>Resource blocking is currently Disabled <button class="enable">Enable</button><button class="reset">Reset</button><button class="edit">Edit</button></h1>';
         html += '<span class="note">(For best results, exit Chrome and start a new instance before enabling resource blocking)</span>';
+      }
+      if (response['spof'] != undefined && response['spof'].scripts.length && response['url'] != undefined) {
+        spofHosts = '';
+        for (var i = 0; i < response['spof'].scripts.length; i++) {
+          if (spofHosts.length) {
+            spofHosts += ',';
+          }
+          spofHosts += response['spof'].scripts[i].host;
+        }
+        html += '<br><a target="_blank" href="http://www.webpagetest.org/?video=1&fvonly=1&runs=3' 
+                + '&url=' + encodeURIComponent(response['url'])
+                + '&spof='+ encodeURIComponent(spofHosts)
+                + '">Generate SPOF Comparison Video</a>';
       }
       if (response['isActive']) {
         html += '<hr><h1>Blocked:</h1>';

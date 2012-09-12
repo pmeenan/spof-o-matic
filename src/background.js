@@ -7,6 +7,7 @@ var badges = {};
 var tab_icons = {};
 var tab_text = {};
 var page_tlds = {};
+var page_urls = {};
 
 // known 3rd-party assets
 var blockList = [
@@ -59,7 +60,7 @@ Array.prototype.remove = function(from, to) {
 // and everything else will have 2
 function GetTLD(host){
 	var tld = host;
-	var noSecondaries = /\.co\.\w\w$/i;
+	var noSecondaries = /\.(gov|ac|mil|net|org|co)\.\w\w$/i;
 	if (host.match(noSecondaries)) {
 		var threePart = /[\w]+\.[\w]+\.[\w]+$/i;
 		tld = host.match(threePart).toString();
@@ -82,6 +83,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       // update the TLD list for the current page
       page_tlds[info.tabId] = new Array();
       page_tlds[info.tabId].push(GetTLD(info.url.match(hostRegex)[1].toString()));
+      page_urls[info.tabId] = info.url;
     }
     if (active && (info.type == 'script' || info.type == 'stylesheet') && BlockURL(info.url, info.tabId)) {
       Blocked(info.url, info.tabId);
@@ -258,26 +260,33 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 **********************************************************************************/
 function onRequest(request, sender, sendResponse) {
   if (request.msg == 'getSPOF') {
-    var response = {isActive: active};
-    if (request['tab'] && detected_spof[request['tab']] != undefined) {
-      response['spof'] = detected_spof[request['tab']];
-      if (response['spof']['scripts'] != undefined) {
-        for( var i = 0; i < response['spof']['scripts'].length; i++) {
-          if (response['spof']['scripts'][i]['host'] != undefined) {
-            response['spof']['scripts'][i]['whitelist'] = isOnWhiteList(response['spof']['scripts'][i]['host'], null);
+    if (request['tab']) {
+      tabId = request['tab'];
+      var response = {isActive: active};
+      if (detected_spof[tabId] != undefined) {
+        response['spof'] = detected_spof[tabId];
+        if (response['spof']['scripts'] != undefined) {
+          for( var i = 0; i < response['spof']['scripts'].length; i++) {
+            if (response['spof']['scripts'][i]['host'] != undefined) {
+              response['spof']['scripts'][i]['whitelist'] = 
+                isOnWhiteList(response['spof']['scripts'][i]['host'], null);
+            }
           }
         }
       }
-    }
-    if (active && request['tab'] && blocked[request['tab']] != undefined) {
-      response['blocked'] = blocked[request['tab']];
-      for (host in response['blocked']) {
-        if (isOnWhiteList(host, null)) {
-          delete response['blocked'][host];
+      if (active && blocked[tabId] != undefined) {
+        response['blocked'] = blocked[tabId];
+        for (host in response['blocked']) {
+          if (isOnWhiteList(host, null)) {
+            delete response['blocked'][host];
+          }
         }
       }
+      if (page_urls[tabId] != undefined) {
+        response['url'] = page_urls[tabId];
+      }
+      sendResponse(response);
     }
-    sendResponse(response);
   } else if (request.msg == 'getLists') {
     var response = {isActive: active};
     response['whitelist'] = whiteList;
@@ -380,7 +389,8 @@ function setSPOF(tab_id, spofHosts, spofScripts) {
       }
     }
   }
-  if (warnCount > 0 && hostCount > 0 && (!active || blocked[tab_id] == undefined)) {
+  if (warnCount > 0 && hostCount > 0 && 
+      (!active || blocked[tab_id] == undefined)) {
     SetBadge(tab_id, ICON_DETECTED, warnCount.toString());
   }
   detected_spof[tab_id] = {hosts: spofHosts, scripts: spofScripts};
@@ -428,7 +438,8 @@ function spofAddScript(arr, host, script, blockedContent) {
     }
   }
   if (!found) {
-    arr.push({'host':host, 'scripts':[{'script':script, 'blockedContent':blockedContent}]});
+    arr.push({'host':host, 
+              'scripts':[{'script':script, 'blockedContent':blockedContent}]});
   }
 }
 
